@@ -91,6 +91,15 @@ pipeline {
                 sh "docker -H 192.168.11.14:2375 tag ${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER} ${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}"
                 sh "docker -H 192.168.11.14:2375 push ${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}"
             }
+            stage ('Deploy Env') {
+              sh "sed -e 's#{JOB_NAME}#${DOCKER_IMAGE_NAME}#g;s#{CODE}#${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}#g;s#{ENV}#${ENV}#g' ${workdir}/cd/common-deployment.yaml > ${workdir}/rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-${BUILD_NUMBER}-deployment.yaml"
+              sh "git add ${workdir}/rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-${BUILD_NUMBER}-deployment.yaml"
+              sh "git commit -m "somefile" ${workdir}/rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-${BUILD_NUMBER}-deployment.yaml"
+                 dir ("${scandir}")
+                  {
+                    git push: "master",credentialsId: '16522bc4-4826-4b0a-beb4-66890b6cb38d', url: "${repositoryUrl}"
+                 }
+            }
           }
         }
      }
