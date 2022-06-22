@@ -1,5 +1,5 @@
-workdir="/home/jenkins/workdir"
-scandir="/var/jenkins_home/workspace/code"
+workdir="/home/jenkins/agent/workspace/agent"
+scandir="/var/jenkins_home/workspace/agent"
 imageurl="192.168.11.14:5000"
 repositoryUrl = scm.userRemoteConfigs[0].url
 pipeline {
@@ -10,10 +10,6 @@ pipeline {
           steps {
             script {
                  if ("${CODE_SCAN}" == "yes"){
-                   dir ("${scandir}")
-                  {
-                    git branch: "master",credentialsId: '16522bc4-4826-4b0a-beb4-66890b6cb38d', url: "${repositoryUrl}"
-                 }
               def scannerHome = tool 'sonarqube';
               if("${BUILD_PROCESS}" != 'init'){
                   acscanDir = "${scandir}/code/${DOCKER_IMAGE_NAME}"
@@ -77,10 +73,6 @@ pipeline {
           }
         steps {
           script {
-                 dir ("${workdir}")
-                  {
-                    git branch: "master",credentialsId: '16522bc4-4826-4b0a-beb4-66890b6cb38d', url: "${repositoryUrl}"
-                 }
             if ("${BUILD_PROCESS}" == "init"){
               dir ("${workdir}"){
                   sh "DOCKER_BUILDKIT=1 docker -H 192.168.11.14:2375 build -t ruoyi-init -f buildkitDockerfile  ."
@@ -100,7 +92,7 @@ pipeline {
                                  sh "sed -e 's#{JOB_NAME}#${DOCKER_IMAGE_NAME}#g;s#{CODE}#${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}#g;s#{ENV}#${ENV}#g' ${workdir}/cd/common-deployment.yaml > ${workdir}/rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-${BUILD_NUMBER}-deployment.yaml"
               sh "git add rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-${BUILD_NUMBER}-deployment.yaml"
               sh "git commit -m 'add deploy' rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-${BUILD_NUMBER}-deployment.yaml"
-
+              sh "git config --global user.email 'agent@aa.com' && git config --global user.name 'deploy'"
                     git push: "master",credentialsId: '16522bc4-4826-4b0a-beb4-66890b6cb38d', url: "${repositoryUrl}"
                  }
             }
