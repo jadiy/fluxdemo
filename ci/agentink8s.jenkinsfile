@@ -9,7 +9,8 @@ pipeline {
         stage ('scan'){
           steps {
             script {
-                 dir ("${scandir}")
+                 if ("${CODE_SCAN}" == "yes"){
+                   dir ("${scandir}")
                   {
                     git branch: "master",credentialsId: '16522bc4-4826-4b0a-beb4-66890b6cb38d', url: "${repositoryUrl}"
                  }
@@ -34,6 +35,7 @@ pipeline {
                 -Dsonar.qualitygate.timeout=600 \
                 -Dsonar.projectBaseDir=${scandir}/code"
               }
+            }
             }
           }
         }
