@@ -43,7 +43,7 @@ pipeline {
                 kind: Pod
                 metadata:
                   labels:
-                    some-label: some-label-value
+                    jenkins: agent
                 spec:
                   containers:
                   - name: jnlp
@@ -51,23 +51,11 @@ pipeline {
                     volumeMounts:
                       - mountPath: /usr/bin/docker
                         name: docker
-                      - mountPath: /var/run/docker.sock
-                        name: sock
-                      - mountPath: /usr/bin/kubectl
-                        name: kube
                   volumes:
                     - hostPath:
                         path: /usr/bin/docker
                         type: ''
                       name: docker
-                    - hostPath:
-                        path: /var/run/docker.sock
-                        type: ''
-                      name: sock
-                    - hostPath:
-                        path: /usr/bin/kubectl
-                        type: ''
-                      name: kube
                 '''.stripIndent()
             }
           }
