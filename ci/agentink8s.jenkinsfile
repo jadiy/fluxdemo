@@ -77,11 +77,11 @@ pipeline {
 
                  dir ("${workdir}")
                   {
-                    sh "sed -e 's#{JOB_NAME}#${DOCKER_IMAGE_NAME}#g;s#{CODE}#${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}#g;s#{ENV}#${ENV}#g' ${workdir}/cd/common-deployment.yaml > ${workdir}/rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-${BUILD_NUMBER}-deployment.yaml"
+                    sh "sed -e 's#{JOB_NAME}#${DOCKER_IMAGE_NAME}#g;s#{CODE}#${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}#g;s#{ENV}#${ENV}#g' ${workdir}/cd/common-deployment.yaml > ${workdir}/rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml"
                     sh "git checkout -b deploy"
                     sh "git config --global user.email 'agent@aa.com' && git config --global user.name 'deploy'"
-                    sh "git add rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-${BUILD_NUMBER}-deployment.yaml"
-                    sh "git commit -m 'add deploy' rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-${BUILD_NUMBER}-deployment.yaml "
+                    sh "git add rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml"
+                    sh "git commit -m 'add deploy' rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml "
                     sshagent(['16522bc4-4826-4b0a-beb4-66890b6cb38d']) {
                       sh "git push origin deploy:master"
                     }
