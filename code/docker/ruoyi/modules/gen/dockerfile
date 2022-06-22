@@ -1,0 +1,9 @@
+FROM ruoyi-init AS builder
+
+FROM  openjdk:8-jre-alpine
+
+WORKDIR /app
+
+COPY --from=builder /app/ruoyi-modules-gen.jar /app/ruoyi-modules-gen.jar
+
+ENTRYPOINT ["java","-jar","ruoyi-modules-gen.jar"]

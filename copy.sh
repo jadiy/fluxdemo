@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+function read_dir_file(){
+for file in `ls $1`
+do
+ if [ -d $1"/"$file ]
+ then
+   if [ $file = "ruoyi-ui" ];then
+     continue
+   fi
+	read_dir_file $1"/"$file
+ else
+  if [ "${file##*.}"x = "jar"x ];then
+     	echo $1"/"$file
+      cp $1"/"$file jar/
+  fi
+ fi
+done
+}
+read_dir_file code

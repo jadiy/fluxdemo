@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {JOB_NAME}-{ENV}
+  namespace: k8s
+  labels:
+    app: {JOB_NAME}-{ENV}
+spec:
+  ports:
+    - port: 8080
+      targetPort: http
+      name: http
+  selector:
+    app: {JOB_NAME}-{ENV}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {JOB_NAME}-{ENV}
+  namespace: k8s
+  labels:
+    app: {JOB_NAME}-{ENV}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {JOB_NAME}-{ENV}
+  template:
+    metadata:
+      labels:
+        app: {JOB_NAME}-{ENV}
+        version: v1
+        using: dev
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: role
+                operator: In
+                values:
+                - normal
+      containers:
+        - name: code
+          env:
+            - name: JARNAME
+              value: {JOB_NAME}.jar
+            - name: gateway-port
+              value: "8080"
+            - name: nacos-group
+              value: DEFAULT
+            - name: nacos-host
+              value: 192.168.11.14
+            - name: nacos-port
+              value: "8848"
+            - name: sentinel-host
+              value: 192.168.11.14
+            - name: sentinel-port
+              value: "8718"
+          image: "{CODE}"
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 40
+            periodSeconds: 2
+            successThreshold: 1
+            tcpSocket:
+              port: 8080
+            timeoutSeconds: 2
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 40
+            periodSeconds: 2
+            successThreshold: 1
+            tcpSocket:
+              port: 8080
+            timeoutSeconds: 2

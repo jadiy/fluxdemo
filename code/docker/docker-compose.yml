@@ -1,0 +1,184 @@
+version : '3.8'
+services:
+  ruoyi-nacos:
+    container_name: ruoyi-nacos
+    image: nacos/nacos-server
+    build:
+      context: ./nacos
+    environment:
+      - MODE=standalone
+    volumes:
+      - ./nacos/logs/:/home/nacos/logs
+      - ./nacos/conf/application.properties:/home/nacos/conf/application.properties
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+      - "9849:9849"
+    depends_on:
+      - ruoyi-mysql
+  ruoyi-mysql:
+    container_name: ruoyi-mysql
+    image: mysql:5.7
+    build:
+      context: ./mysql
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./mysql/conf:/etc/mysql/conf.d
+      - ./mysql/logs:/logs
+      - ./mysql/data:/var/lib/mysql
+    command: [
+      'mysqld',
+      '--innodb-buffer-pool-size=80M',
+      '--character-set-server=utf8mb4',
+      '--collation-server=utf8mb4_unicode_ci',
+      '--default-time-zone=+8:00',
+      '--lower-case-table-names=1'
+    ]
+    environment:
+      MYSQL_DATABASE: 'ry-cloud'
+      MYSQL_ROOT_PASSWORD: password
+  ruoyi-redis:
+    container_name: ruoyi-redis
+    image: redis
+    build:
+      context: ./redis
+    ports:
+      - "6370:6379"
+    volumes:
+      - ./redis/conf/redis.conf:/home/ruoyi/redis/redis.conf
+      - ./redis/data:/data
+    command: redis-server /home/ruoyi/redis/redis.conf
+  ruoyi-nginx:
+    container_name: ruoyi-nginx
+    image: docker_ruoyi-ui
+    ports:
+      - "83:80"
+    depends_on:
+      - ruoyi-gateway
+  ruoyi-gateway:
+    container_name: ruoyi-gateway
+    build:
+        context: ./ruoyi/gateway
+        dockerfile: dockerfile
+    ports:
+      - "8081:8080"
+    environment:
+      - JARNAME=ruoyi-gateway.jar
+      - gateway-port=8080
+      - nacos-host=192.168.11.14
+      - nacos-port=8848
+      - nacos-group=DEFAULT
+      - sentinel-host=192.168.11.14
+      - sentinel-port=8718
+  ruoyi-auth:
+    container_name: ruoyi-auth
+    build:
+        context: ./ruoyi/auth
+        dockerfile: dockerfile
+    ports:
+      - "9200:8080"
+    environment:
+      - JARNAME=ruoyi-auth.jar
+      - auth-port=8080
+      - nacos-host=192.168.11.14
+      - nacos-port=8848
+      - nacos-group=DEFAULT
+  ruoyi-modules-system:
+    container_name: ruoyi-modules-system
+    build:
+        context: ./ruoyi/modules/system
+        dockerfile: dockerfile
+    ports:
+      - "9201:8080"
+    environment:
+      - JARNAME=ruoyi-modules-system.jar
+      - system-port=8080
+      - nacos-host=192.168.11.14
+      - nacos-port=8848
+      - nacos-group=DEFAULT
+  ruoyi-modules-gen:
+    container_name: ruoyi-modules-gen
+    build:
+        context: ./ruoyi/modules/gen
+        dockerfile: dockerfile
+    ports:
+      - "9202:8080"
+    environment:
+      - JARNAME=ruoyi-modules-gen.jar
+      - gen-port=8080
+      - nacos-host=192.168.11.14
+      - nacos-port=8848
+      - nacos-group=DEFAULT
+  ruoyi-modules-job:
+    container_name: ruoyi-modules-job
+    build:
+        context: ./ruoyi/modules/job
+        dockerfile: dockerfile
+    ports:
+      - "9203:8080"
+    environment:
+      - JARNAME=ruoyi-modules-job.jar
+      - job-port=8080
+      - nacos-host=192.168.11.14
+      - nacos-port=8848
+      - nacos-group=DEFAULT
+  ruoyi-modules-file:
+    container_name: ruoyi-modules-file
+    build:
+        context: ./ruoyi/modules/file
+        dockerfile: dockerfile
+    ports:
+      - "9300:8080"
+    environment:
+      - JARNAME=ruoyi-modules-file.jar
+      - file-port=8080
+      - nacos-host=192.168.11.14
+      - nacos-port=8848
+      - nacos-group=DEFAULT
+    volumes:
+    - ./ruoyi/uploadPath:/home/ruoyi/uploadPath
+  ruoyi-visual-monitor:
+    container_name: ruoyi-visual-monitor
+    build:
+        context: ./ruoyi/visual/monitor
+        dockerfile: dockerfile
+    ports:
+      - "9100:8080"
+    environment:
+      - JARNAME=ruoyi-visual-monitor.jar
+      - monitor-port=8080
+      - nacos-host=192.168.11.14
+      - nacos-port=8848
+      - nacos-group=DEFAULT
+  ruoyi-sentinel:
+    container_name: ruoyi-sentinel
+    build:
+        context: ./sentinel
+        dockerfile: dockerfile
+    ports:
+      - "8280:8280"
+    environment:
+      - JAVA_OPTS=-Dcsp.sentinel.log.dir=/opt/logs
+    volumes:
+      - ./logs:/opt/logs
+  ruoyi-seata:
+    container_name: ruoyi-seata
+    build:
+        context: ./seata
+        dockerfile: dockerfile
+    ports:
+      - "8091:8091"
+    environment:
+      # 指定seata服务启动端口
+      - SEATA_PORT=8091
+      # 注册到nacos上的ip。客户端将通过该ip访问seata服务。
+      # 注意公网ip和内网ip的差异。
+      - SEATA_IP=192.168.11.14
+      - SEATA_CONFIG_NAME=file:/root/seata-config/registry
+    volumes:
+    # 因为registry.conf中是nacos配置中心，只需要把registry.conf放到./seata-server/config文件夹中
+      - "./seata-server/config:/root/seata-config"
+networks:
+  ruoyi:
+    external: false

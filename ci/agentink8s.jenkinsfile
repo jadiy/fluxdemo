@@ -1,0 +1,127 @@
+workdir="/home/jenkins/workdir"
+scandir="/var/jenkins_home/workspace/code"
+imageurl="10.0.1.151:5000"
+pipeline {
+    agent any;
+    stages
+     {
+        stage ('scan'){
+          steps {
+            script {
+             if (!fileExists("${scandir}")) {
+                 sh "mkdir -p ${scandir}"
+                 dir ("${scandir}") {
+                     def repositoryUrl = scm.userRemoteConfigs[0].url
+                     sh "git init"
+                     sh "git remote add origin ${repositoryUrl}"
+                     sh "git checkout -b master"
+                     sh "git pull origin master"
+                 }
+              }
+              else
+               {
+                 dir ("${scandir}")
+                  {
+                     sh "git pull origin master"
+                 }
+              }
+              def scannerHome = tool 'sonarqube';
+              if("${BUILD_PROCESS}" != 'init'){
+                  acscanDir = "${scandir}/code/${DOCKER_IMAGE_NAME}"
+              } else {
+                  acscanDir = "${scandir}/code"
+              }
+              withSonarQubeEnv('sonarqube') {
+                sh "${scannerHome}/bin/sonar-scanner \
+                -Dsonar.host.url=http://s-sonarqube \
+                -Dsonar.login=squ_91035ed3ff0044daf7a7a444a2a40b5d044e2fbf \
+                -Dsonar.sourceEncoding=UTF-8 \
+                -Dsonar.sources=${acscanDir} \
+                -Dsonar.language=java \
+                -Dsonar.java.binaries=${acscanDir}/ \
+                -Dsonar.exclusions=docker/**,k8s/**,ruoyi-ui/**,ruoyi-visual/**,**/src/main/assets/** \
+                -Dsonar.projectVersion=${BUILD_NUMBER} \
+                -Dsonar.projectKey=${JOB_NAME} \
+                -Dsonar.projectName=${JOB_NAME} \
+                -Dsonar.qualitygate.timeout=600 \
+                -Dsonar.projectBaseDir=${scandir}/code"
+              }
+            }
+          }
+        }
+        stage('Test') {
+          agent {
+            kubernetes {
+               yaml '''\
+                apiVersion: v1
+                kind: Pod
+                metadata:
+                  labels:
+                    some-label: some-label-value
+                spec:
+                  containers:
+                  - name: jnlp
+                    image: kinshy-docker.pkg.coding.net/south/cross/jenkins-agent:maven-3.6.3
+                    volumeMounts:
+                      - mountPath: /usr/bin/docker
+                        name: docker
+                      - mountPath: /var/run/docker.sock
+                        name: sock
+                      - mountPath: /usr/bin/kubectl
+                        name: kube
+                  volumes:
+                    - hostPath:
+                        path: /usr/bin/docker
+                        type: ''
+                      name: docker
+                    - hostPath:
+                        path: /var/run/docker.sock
+                        type: ''
+                      name: sock
+                    - hostPath:
+                        path: /usr/bin/kubectl
+                        type: ''
+                      name: kube
+                '''.stripIndent()
+            }
+          }
+        steps {
+          script {
+             if (!fileExists("${workdir}")) {
+                 sh "mkdir -p ${workdir}"
+                 dir ("${workdir}") {
+                     def repositoryUrl = scm.userRemoteConfigs[0].url
+                     sh "git init"
+                     sh "git remote add origin ${repositoryUrl}"
+                     sh "git checkout -b master"
+                     sh "git pull origin master"
+                 }
+              }
+              else
+               {
+                 dir ("${workdir}")
+                  {
+                     sh "git pull origin master"
+                 }
+
+              }
+
+
+            if ("${BUILD_PROCESS}" == "init"){
+              dir ("${workdir}"){
+                  sh "DOCKER_BUILDKIT=1 docker -H 10.0.1.151:2375 build -t ruoyi-init -f buildkitDockerfile  ."
+              }
+            }
+            dir ("${workdir}/ci"){
+                sh "docker -H 10.0.1.151:2375 build -t ${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER} --build-arg ENV=${ENV} --build-arg buildname=${DOCKER_IMAGE_NAME} ."
+            }
+            stage ('docker -H 10.0.1.151:2375 Push') {
+                sh "docker -H 10.0.1.151:2375 tag ${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER} ${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}"
+                sh "docker -H 10.0.1.151:2375 push ${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}"
+            }
+          }
+        }
+     }
+}
+}
+
