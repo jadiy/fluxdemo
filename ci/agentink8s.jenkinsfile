@@ -1,6 +1,6 @@
 workdir="/home/jenkins/workdir"
 scandir="/var/jenkins_home/workspace/code"
-imageurl="10.0.1.151:5000"
+imageurl="192.168.11.14:5000"
 pipeline {
     agent any;
     stages
@@ -109,15 +109,15 @@ pipeline {
 
             if ("${BUILD_PROCESS}" == "init"){
               dir ("${workdir}"){
-                  sh "DOCKER_BUILDKIT=1 docker -H 10.0.1.151:2375 build -t ruoyi-init -f buildkitDockerfile  ."
+                  sh "DOCKER_BUILDKIT=1 docker -H 192.168.11.14:2375 build -t ruoyi-init -f buildkitDockerfile  ."
               }
             }
             dir ("${workdir}/ci"){
-                sh "docker -H 10.0.1.151:2375 build -t ${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER} --build-arg ENV=${ENV} --build-arg buildname=${DOCKER_IMAGE_NAME} ."
+                sh "docker -H 192.168.11.14:2375 build -t ${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER} --build-arg ENV=${ENV} --build-arg buildname=${DOCKER_IMAGE_NAME} ."
             }
-            stage ('docker -H 10.0.1.151:2375 Push') {
-                sh "docker -H 10.0.1.151:2375 tag ${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER} ${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}"
-                sh "docker -H 10.0.1.151:2375 push ${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}"
+            stage ('docker -H 192.168.11.14:2375 Push') {
+                sh "docker -H 192.168.11.14:2375 tag ${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER} ${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}"
+                sh "docker -H 192.168.11.14:2375 push ${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}"
             }
           }
         }
