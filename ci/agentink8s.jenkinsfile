@@ -9,23 +9,10 @@ pipeline {
         stage ('scan'){
           steps {
             script {
-             if (!fileExists("${scandir}")) {
-                 sh "mkdir -p ${scandir}"
-                 dir ("${scandir}") {
-                   git branch: "${mbranch}",credentialsId: '16522bc4-4826-4b0a-beb4-66890b6cb38d', url: "${repositoryUrl}"
-                     sh "git init"
-                     sh "git remote add origin ${repositoryUrl}"
-                     sh "git checkout -b master"
-                     sh "git pull origin master"
-                 }
-              }
-              else
-               {
                  dir ("${scandir}")
                   {
                     git branch: "master",credentialsId: '16522bc4-4826-4b0a-beb4-66890b6cb38d', url: "${repositoryUrl}"
                  }
-              }
               def scannerHome = tool 'sonarqube';
               if("${BUILD_PROCESS}" != 'init'){
                   acscanDir = "${scandir}/code/${DOCKER_IMAGE_NAME}"
@@ -88,26 +75,10 @@ pipeline {
           }
         steps {
           script {
-             if (!fileExists("${workdir}")) {
-                 sh "mkdir -p ${workdir}"
-                 dir ("${workdir}") {
-                     def repositoryUrl = scm.userRemoteConfigs[0].url
-                     sh "git init"
-                     sh "git remote add origin ${repositoryUrl}"
-                     sh "git checkout -b master"
-                     sh "git pull origin master"
-                 }
-              }
-              else
-               {
-                 dir ("${workdir}")
+                 dir ("${scandir}")
                   {
-                     sh "git pull origin master"
+                    git branch: "master",credentialsId: '16522bc4-4826-4b0a-beb4-66890b6cb38d', url: "${repositoryUrl}"
                  }
-
-              }
-
-
             if ("${BUILD_PROCESS}" == "init"){
               dir ("${workdir}"){
                   sh "DOCKER_BUILDKIT=1 docker -H 192.168.11.14:2375 build -t ruoyi-init -f buildkitDockerfile  ."
