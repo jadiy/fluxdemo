@@ -85,9 +85,6 @@ pipeline {
                     sshagent(['16522bc4-4826-4b0a-beb4-66890b6cb38d']) {
                       sh "git push origin deploy:master"
                     }
-                    withCredentials([sshUserPrivateKey(credentialsId: '16522bc4-4826-4b0a-beb4-66890b6cb38d', keyFileVariable: 'SSH_KEY')]) {
-                       sh("git push origin deploy:master")
-                    }
                  }
             }
           }
