@@ -81,7 +81,7 @@ pipeline {
                     sh "git add rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-${BUILD_NUMBER}-deployment.yaml"
                     sh "git config --global user.email 'agent@aa.com' && git config --global user.name 'deploy'"
                     sh "git commit -m 'add deploy' rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-${BUILD_NUMBER}-deployment.yaml"
-                    git push: "master",credentialsId: '16522bc4-4826-4b0a-beb4-66890b6cb38d', url: "${repositoryUrl}"
+                    sh "git push origin master"
                  }
             }
           }
