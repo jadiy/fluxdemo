@@ -74,7 +74,7 @@ pipeline {
                 sh "docker -H 192.168.11.14:2375 push ${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}"
             }
             stage ('Deploy Env') {
-
+                 input("确认生成部署文件吗?")
                  dir ("${workdir}")
                   {
                     sh "sed -e 's#{JOB_NAME}#${DOCKER_IMAGE_NAME}#g;s#{CODE}#${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}#g;s#{ENV}#${ENV}#g' ${workdir}/cd/common-deployment.yaml > ${workdir}/rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml"
