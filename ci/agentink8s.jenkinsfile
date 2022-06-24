@@ -1,5 +1,5 @@
-workdir="${WORKSPACE}"
-scandir="${WORKSPACE}"
+workdir="${env.WORKSPACE}"
+scandir="${env.WORKSPACE}"
 imageurl="10.0.1.151:5000"
 repositoryUrl = scm.userRemoteConfigs[0].url
 pipeline {
