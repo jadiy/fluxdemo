@@ -1,7 +1,4 @@
-workdir="${env.WORKSPACE}"
-scandir="${env.WORKSPACE}"
 imageurl="10.0.1.151:5000"
-repositoryUrl = scm.userRemoteConfigs[0].url
 pipeline {
     agent any;
     stages{
@@ -10,6 +7,7 @@ pipeline {
           stage ('scan'){
             steps {
               script {
+                def scandir = pwd();
                 if ("${CODE_SCAN}" == "yes"){
                   def scannerHome = tool 'sonarqube';
                   if("${BUILD_PROCESS}" != 'init'){
@@ -62,7 +60,8 @@ pipeline {
             }        
             steps {
               script {
-                if ("${BUILD_PROCESS}" == "init"){
+                def workdir = pwd();
+                if("${BUILD_PROCESS}" == "init"){
                   dir ("${workdir}"){
                       sh "DOCKER_BUILDKIT=1 docker -H 10.0.1.151:2375 build -t ruoyi-init -f buildkitDockerfile  ."
                   }
@@ -96,3 +95,5 @@ pipeline {
     }
 }
 
+
+}
