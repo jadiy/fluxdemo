@@ -11,25 +11,21 @@ pipeline {
                 def scandir = pwd();
                 if ("${CODE_SCAN}" == "yes"){
                   def scannerHome = tool 'sonarqube';
-                  if("${BUILD_PROCESS}" != 'init'){
-                      acscanDir = "${scandir}/code/${DOCKER_IMAGE_NAME}"
-                  } else {
-                      acscanDir = "${scandir}/code"
-                  }
+
+                      acscanDir = "${scandir}/code/ruoyi-ui"
+
                   withSonarQubeEnv('sonarqube') {
                     sh "${scannerHome}/bin/sonar-scanner \
                     -Dsonar.host.url=http://s-sonarqube \
                     -Dsonar.login=squ_91035ed3ff0044daf7a7a444a2a40b5d044e2fbf \
                     -Dsonar.sourceEncoding=UTF-8 \
                     -Dsonar.sources=${acscanDir} \
-                    -Dsonar.language=java \
-                    -Dsonar.java.binaries=${acscanDir}/ \
-                    -Dsonar.exclusions=docker/**,k8s/**,ruoyi-ui/**,ruoyi-visual/**,**/src/main/assets/** \
+                    -Dsonar.exclusions=node_modules/** \
                     -Dsonar.projectVersion=${BUILD_NUMBER} \
                     -Dsonar.projectKey=${JOB_NAME} \
                     -Dsonar.projectName=${JOB_NAME} \
                     -Dsonar.qualitygate.timeout=600 \
-                    -Dsonar.projectBaseDir=${scandir}/code"
+                    -Dsonar.projectBaseDir=${scandir}/code/ruoyi-ui"
                   }
                 }
               }
