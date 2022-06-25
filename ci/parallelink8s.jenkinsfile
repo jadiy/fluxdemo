@@ -1,0 +1,97 @@
+localIP="192.168.11.14"
+imageurl="${localIP}:5000"
+pipeline {
+    agent any;
+    stages{
+      stage ('并行任务'){
+        parallel {
+          stage ('scan'){
+            steps {
+              script {
+                def scandir = pwd();
+                if ("${CODE_SCAN}" == "yes"){
+                  def scannerHome = tool 'sonarqube';
+                  if("${BUILD_PROCESS}" != 'init'){
+                      acscanDir = "${scandir}/code/${DOCKER_IMAGE_NAME}"
+                  } else {
+                      acscanDir = "${scandir}/code"
+                  }
+                  withSonarQubeEnv('sonarqube') {
+                    sh "${scannerHome}/bin/sonar-scanner \
+                    -Dsonar.host.url=http://s-sonarqube \
+                    -Dsonar.login=squ_91035ed3ff0044daf7a7a444a2a40b5d044e2fbf \
+                    -Dsonar.sourceEncoding=UTF-8 \
+                    -Dsonar.sources=${acscanDir} \
+                    -Dsonar.language=java \
+                    -Dsonar.java.binaries=${acscanDir}/ \
+                    -Dsonar.exclusions=docker/**,k8s/**,ruoyi-ui/**,ruoyi-visual/**,**/src/main/assets/** \
+                    -Dsonar.projectVersion=${BUILD_NUMBER} \
+                    -Dsonar.projectKey=${JOB_NAME} \
+                    -Dsonar.projectName=${JOB_NAME} \
+                    -Dsonar.qualitygate.timeout=600 \
+                    -Dsonar.projectBaseDir=${scandir}/code"
+                  }
+                }
+              }
+            }
+          }
+          stage('buildJava') {
+            agent {
+              kubernetes {
+                 yaml '''\
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    labels:
+                      jenkins: agent
+                  spec:
+                    containers:
+                    - name: jnlp
+                      image: kinshy-docker.pkg.coding.net/south/cross/jenkins-agent:maven-3.6.3
+                      volumeMounts:
+                        - mountPath: /usr/bin/docker
+                          name: docker
+                    volumes:
+                      - hostPath:
+                          path: /usr/bin/docker
+                          type: ''
+                        name: docker
+                  '''.stripIndent()
+              }
+            }        
+            steps {
+              script {
+                def workdir = pwd();
+                if("${BUILD_PROCESS}" == "init"){
+                  dir ("${workdir}/code/ruoyi-ui"){
+                      sh "DOCKER_BUILDKIT=1 docker -H ${localIP}:2375 build -t ruoyi-init -f buildkitDockerfile  ."
+                  }
+                }
+                dir ("${workdir}/ci"){
+                    sh "docker -H ${localIP}:2375 build -t ${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER} --build-arg ENV=${ENV} --build-arg buildname=${DOCKER_IMAGE_NAME} -f uiDockerfile ."
+                }
+                stage ('docker -H ${localIP}:2375 Push') {
+                    sh "docker -H ${localIP}:2375 tag ${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER} ${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}"
+                    sh "docker -H ${localIP}:2375 push ${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}"
+                }
+                stage ('Deploy Env') {
+                   input("确认生成部署文件吗?")
+                   dir ("${workdir}")
+                    {
+                      sh "sed -e 's#{JOB_NAME}#${DOCKER_IMAGE_NAME}#g;s#{CODE}#${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}#g;s#{ENV}#${ENV}#g' ${workdir}/cd/common-deployment.yaml > ${workdir}/rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml"
+                      sh "git checkout -b deploy"
+                      sh "git config --global user.email 'agent@aa.com' && git config --global user.name 'deploy'"
+                      sh "git add rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml"
+                      sh "git commit -m 'add deploy' rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml "
+                      sshagent(['16522bc4-4826-4b0a-beb4-66890b6cb38d']) {
+                        sh "git push origin deploy:master"
+                      }
+                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+}

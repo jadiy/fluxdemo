@@ -1,0 +1,10 @@
+FROM docker_ruoyi-ui AS builder
+
+FROM kinshy-docker.pkg.coding.net/south/cross/nginx:stable-alpine
+
+WORKDIR /app
+# copy jar
+COPY --from=builder /app/webs/* /app/webs/
+
+COPY /etc/nginx/nginx.conf /etc/nginx/nginx.conf
+
