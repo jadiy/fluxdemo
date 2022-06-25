@@ -19,7 +19,7 @@ pipeline {
                   withSonarQubeEnv('sonarqube') {
                     sh "${scannerHome}/bin/sonar-scanner \
                     -Dsonar.host.url=http://s-sonarqube \
-                    -Dsonar.login=squ_91035ed3ff0044daf7a7a444a2a40b5d044e2fbf \
+                    -Dsonar.login=squ_a7fabb59b15b4711ebd46830c8dcdd37bc63cfc9 \
                     -Dsonar.sourceEncoding=UTF-8 \
                     -Dsonar.sources=${acscanDir} \
                     -Dsonar.language=java \
