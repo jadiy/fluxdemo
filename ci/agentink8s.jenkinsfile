@@ -1,4 +1,5 @@
-imageurl="10.0.1.151:5000"
+localIP="192.168.11.14"
+imageurl="${localIP}:5000"
 pipeline {
     agent any;
     stages{
@@ -63,15 +64,15 @@ pipeline {
                 def workdir = pwd();
                 if("${BUILD_PROCESS}" == "init"){
                   dir ("${workdir}"){
-                      sh "DOCKER_BUILDKIT=1 docker -H 10.0.1.151:2375 build -t ruoyi-init -f buildkitDockerfile  ."
+                      sh "DOCKER_BUILDKIT=1 docker -H ${localIP}:2375 build -t ruoyi-init -f buildkitDockerfile  ."
                   }
                 }
                 dir ("${workdir}/ci"){
-                    sh "docker -H 10.0.1.151:2375 build -t ${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER} --build-arg ENV=${ENV} --build-arg buildname=${DOCKER_IMAGE_NAME} ."
+                    sh "docker -H ${localIP}:2375 build -t ${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER} --build-arg ENV=${ENV} --build-arg buildname=${DOCKER_IMAGE_NAME} ."
                 }
-                stage ('docker -H 10.0.1.151:2375 Push') {
-                    sh "docker -H 10.0.1.151:2375 tag ${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER} ${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}"
-                    sh "docker -H 10.0.1.151:2375 push ${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}"
+                stage ('Push') {
+                    sh "docker -H ${localIP}:2375 tag ${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER} ${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}"
+                    sh "docker -H ${localIP}:2375 push ${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}"
                 }
                 stage ('Deploy Env') {
                    input("确认生成部署文件吗?")
