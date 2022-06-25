@@ -60,7 +60,7 @@ pipeline {
                 def workdir = pwd();
                 if("${BUILD_PROCESS}" == "init"){
                   dir ("${workdir}/code/ruoyi-ui"){
-                      sh "DOCKER_BUILDKIT=1 docker -H ${localIP}:2375 build -t ruoyi-init -f buildkitDockerfile  ."
+                      sh "DOCKER_BUILDKIT=1 docker -H ${localIP}:2375 build -t docker_ruoyi-ui -f buildkitDockerfile  ."
                   }
                 }
                 dir ("${workdir}/ci"){
