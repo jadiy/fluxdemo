@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: k8s
+  labels:
+    app: kong-k8s
+  name: kong-k8s
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: ui.ops.com
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: ruoyi-nginx
+                port:
+                  number: 80
+    - host: api.ops.com
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: ruoyi-gateway-dev
+                port:
+                  number: 8080
