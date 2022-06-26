@@ -9,6 +9,7 @@ pipeline {
             steps {
               script {
                 def scandir = pwd();
+                def build_tag = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
                 if ("${CODE_SCAN}" == "yes"){
                   def scannerHome = tool 'sonarqube';
                   if("${BUILD_PROCESS}" != 'init'){
@@ -25,7 +26,7 @@ pipeline {
                     -Dsonar.language=java \
                     -Dsonar.java.binaries=${acscanDir}/ \
                     -Dsonar.exclusions=docker/**,k8s/**,ruoyi-ui/**,ruoyi-visual/**,**/src/main/assets/** \
-                    -Dsonar.projectVersion=${BUILD_NUMBER} \
+                    -Dsonar.projectVersion=${build_tag} \
                     -Dsonar.projectKey=${JOB_NAME} \
                     -Dsonar.projectName=${JOB_NAME} \
                     -Dsonar.qualitygate.timeout=600 \
@@ -62,23 +63,24 @@ pipeline {
             steps {
               script {
                 def workdir = pwd();
+                def build_tag = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
                 if("${BUILD_PROCESS}" == "init"){
                   dir ("${workdir}"){
                       sh "DOCKER_BUILDKIT=1 docker -H ${localIP}:2375 build -t ruoyi-init -f buildkitDockerfile  ."
                   }
                 }
                 dir ("${workdir}/ci"){
-                    sh "docker -H ${localIP}:2375 build -t ${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER} --build-arg ENV=${ENV} --build-arg buildname=${DOCKER_IMAGE_NAME} ."
+                    sh "docker -H ${localIP}:2375 build -t ${DOCKER_IMAGE_NAME}:${build_tag} --build-arg ENV=${ENV} --build-arg buildname=${DOCKER_IMAGE_NAME} ."
                 }
                 stage ('Push') {
-                    sh "docker -H ${localIP}:2375 tag ${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER} ${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}"
-                    sh "docker -H ${localIP}:2375 push ${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}"
+                    sh "docker -H ${localIP}:2375 tag ${DOCKER_IMAGE_NAME}:${build_tag} ${imageurl}/${DOCKER_IMAGE_NAME}:${build_tag}"
+                    sh "docker -H ${localIP}:2375 push ${imageurl}/${DOCKER_IMAGE_NAME}:${build_tag}"
                 }
                 stage ('Deploy Env') {
                    input("确认生成部署文件吗?")
                    dir ("${workdir}")
                     {
-                      sh "sed -e 's#{PORT}#8080#g;s#{JOB_NAME}#${DOCKER_IMAGE_NAME}#g;s#{CODE}#${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${BUILD_NUMBER}#g;s#{ENV}#${ENV}#g' ${workdir}/cd/common-deployment.yaml > ${workdir}/rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml"
+                      sh "sed -e 's#{PORT}#8080#g;s#{JOB_NAME}#${DOCKER_IMAGE_NAME}#g;s#{CODE}#${imageurl}/${DOCKER_IMAGE_NAME}:${build_tag}#g;s#{ENV}#${ENV}#g' ${workdir}/cd/common-deployment.yaml > ${workdir}/rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml"
                       sh "git checkout -b deploy"
                       sh "git config --global user.email 'agent@aa.com' && git config --global user.name 'deploy'"
                       sh "git add rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml"

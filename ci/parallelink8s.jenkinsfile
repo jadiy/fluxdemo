@@ -22,8 +22,8 @@ pipeline {
                     -Dsonar.sources=${acscanDir} \
                     -Dsonar.exclusions=node_modules/** \
                     -Dsonar.projectVersion=${build_tag} \
-                    -Dsonar.projectKey=${JOB_NAME} \
-                    -Dsonar.projectName=${JOB_NAME} \
+                    -Dsonar.projectKey=${DOCKER_IMAGE_NAME} \
+                    -Dsonar.projectName=${DOCKER_IMAGE_NAME} \
                     -Dsonar.qualitygate.timeout=600 \
                     -Dsonar.projectBaseDir=${scandir}/code/ruoyi-ui"
                   }
@@ -65,17 +65,17 @@ pipeline {
                   }
                 }
                 dir ("${workdir}/ci"){
-                    sh "docker -H ${localIP}:2375 build -t ${DOCKER_IMAGE_NAME}:${ENV}.${build_tag} --build-arg ENV=${ENV} --build-arg buildname=${DOCKER_IMAGE_NAME} -f uiDockerfile ."
+                    sh "docker -H ${localIP}:2375 build -t ${DOCKER_IMAGE_NAME}:${build_tag} --build-arg ENV=${ENV} --build-arg buildname=${DOCKER_IMAGE_NAME} -f uiDockerfile ."
                 }
                 stage ('docker -H ${localIP}:2375 Push') {
-                    sh "docker -H ${localIP}:2375 tag ${DOCKER_IMAGE_NAME}:${ENV}.${build_tag} ${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${build_tag}"
-                    sh "docker -H ${localIP}:2375 push ${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${build_tag}"
+                    sh "docker -H ${localIP}:2375 tag ${DOCKER_IMAGE_NAME}:${build_tag} ${imageurl}/${DOCKER_IMAGE_NAME}:${build_tag}"
+                    sh "docker -H ${localIP}:2375 push ${imageurl}/${DOCKER_IMAGE_NAME}:${build_tag}"
                 }
                 stage ('Deploy Env') {
                    input("确认生成部署文件吗?")
                    dir ("${workdir}")
                     {
-                      sh "sed -e 's#{JOB_NAME}#${DOCKER_IMAGE_NAME}#g;s#{PORT}#80#g;s#{CODE}#${imageurl}/${DOCKER_IMAGE_NAME}:${ENV}.${build_tag}#g;s#{ENV}#${ENV}#g' ${workdir}/cd/common-deployment.yaml > ${workdir}/rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml"
+                      sh "sed -e 's#{JOB_NAME}#${DOCKER_IMAGE_NAME}#g;s#{PORT}#80#g;s#{CODE}#${imageurl}/${DOCKER_IMAGE_NAME}:${build_tag}#g;s#{ENV}#${ENV}#g' ${workdir}/cd/common-deployment.yaml > ${workdir}/rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml"
                       sh "git checkout -b deploy"
                       sh "git config --global user.email 'agent@aa.com' && git config --global user.name 'deploy'"
                       sh "git add rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml"
