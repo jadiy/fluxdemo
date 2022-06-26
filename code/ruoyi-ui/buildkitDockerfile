@@ -16,6 +16,6 @@ FROM kinshy-docker.pkg.coding.net/south/cross/nginx:stable-alpine
 WORKDIR /app
 # copy jar
 COPY --from=builder /app/code/dist/* /app/webs/
-RUN cd webs && mkdir assets && mv js/ css/ img/ fonts/ assets/
+
 COPY ./conf/nginx.conf /etc/nginx/nginx.conf
 
