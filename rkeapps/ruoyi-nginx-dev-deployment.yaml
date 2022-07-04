@@ -58,7 +58,7 @@ spec:
               value: 192.168.11.14
             - name: sentinel-port
               value: "8718"
-          image: "192.168.11.14:5000/ruoyi-nginx:6ced0e0"
+          image: "192.168.11.14:5000/ruoyi-nginx:da512c3"
           ports:
             - name: http
               containerPort: 80
