@@ -32,7 +32,7 @@ data:
     output.elasticsearch:
       index: "ruoyi-nginx-log"
       enabled: true
-      hosts: ["http://cs-es-es:9200"] # elasticsearch 地址
+      hosts: ["http://cs-es-es.os:9200"] # elasticsearch 地址
       username: "elastic"             # elasticsearch 用户名
       password: "N3Q7DANKx68UP150qM8Td6C9"        # elasticsearch 密码
     setup.template.name: "ruoyi-nginx-log"
