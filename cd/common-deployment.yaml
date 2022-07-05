@@ -23,12 +23,23 @@ metadata:
     sa-app: filebeat
 data:
   filebeat.yml: |-
-    filebeat.modules:
-    - module: nginx
-      access:
-        enabled: true
-        var.paths:
-          - /app/logs/efk_access.log
+    filebeat.inputs:
+    - type: log
+      paths:
+        - /app/logs/efk_access.log
+      json.keys_under_root: true
+      json.add_error_key: true
+      json.overwrite_keys: true
+    processors:
+      - convert:
+          fields:
+            - {from: "upstreamtime", to: "uptime", type: "float"}
+            - {from: "status", to: "status", type: "integer"}
+            - {from: "responsetime", to: "restime", type: "float"}
+            - {from: "sentbyte", to: "sentbyte", type: "integer"}
+            - {from: "recbyte", to: "recbyte", type: "integer"}
+          ignore_missing: true
+          fail_on_error: false
     output.elasticsearch:
       index: "{JOB_NAME}-log"
       enabled: true
