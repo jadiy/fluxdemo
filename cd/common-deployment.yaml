@@ -13,6 +13,29 @@ spec:
   selector:
     app: {JOB_NAME}-{ENV}
 ---
+#filebeat
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {JOB_NAME}-config
+  namespace: k8s
+  labels:
+    sa-app: filebeat
+data:
+  filebeat.yml: |-
+    filebeat.modules:
+    - module: nginx
+      access:
+        enabled: true
+        var.paths:
+          - /app/logs/efk_access.log
+    output.elasticsearch:
+      index: "{JOB_NAME}-log"
+      enabled: true
+      hosts: ["http://cs-es-es:9200"] # elasticsearch 地址
+      username: "elastic"             # elasticsearch 用户名
+      password: "N3Q7DANKx68UP150qM8Td6C9"        # elasticsearch 密码
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -32,6 +55,13 @@ spec:
         version: v1
         using: dev
     spec:
+      #做一个emptyDir类型，名为www的volume 用于多个容器共享同一个挂载
+      volumes:
+        - name: logs
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: {JOB_NAME}-config
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -79,3 +109,22 @@ spec:
             tcpSocket:
               port: {PORT}
             timeoutSeconds: 2
+          volumeMounts:
+            - mountPath: /app/logs/
+              name: logs
+        - name: filebeat
+          image: "kili-docker.pkg.coding.net/ebes/ot/filebeat:8.3.1"
+          imagePullPolicy: IfNotPresent
+          args: [
+            "-c", "/etc/filebeat.yml",
+            "-e",
+          ]
+          volumeMounts:
+            - mountPath: /etc/filebeat.yml
+              name: config
+              readOnly: true
+              subPath: filebeat.yml
+            - mountPath: /app/logs/
+              name: logs
+          resources:
+            {}
