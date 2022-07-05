@@ -35,6 +35,8 @@ data:
       hosts: ["http://cs-es-es:9200"] # elasticsearch 地址
       username: "elastic"             # elasticsearch 用户名
       password: "N3Q7DANKx68UP150qM8Td6C9"        # elasticsearch 密码
+    setup.template.name: "ruoyi-nginx-log"
+    setup.template.pattern: "ruoyi-nginx-*"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -88,7 +90,7 @@ spec:
               value: 192.168.11.14
             - name: sentinel-port
               value: "8718"
-          image: "192.168.11.14:5000/ruoyi-nginx:e34511f"
+          image: "192.168.11.14:5000/ruoyi-nginx:cf24cf6"
           ports:
             - name: http
               containerPort: 80
