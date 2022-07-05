@@ -23,16 +23,27 @@ metadata:
     sa-app: filebeat
 data:
   filebeat.yml: |-
-    filebeat.modules:
-    - module: nginx
-      access:
-        enabled: true
-        var.paths:
-          - /app/logs/efk_access.log
+    filebeat.inputs:
+    - type: log
+      paths:
+        - /app/logs/efk_access.log
+      json.keys_under_root: true
+      json.add_error_key: true
+      json.overwrite_keys: true
+    processors:
+      - convert:
+          fields:
+            - {from: "upstreamtime", to: "uptime", type: "float"}
+            - {from: "status", to: "status", type: "integer"}
+            - {from: "responsetime", to: "restime", type: "float"}
+            - {from: "sentbyte", to: "sentbyte", type: "integer"}
+            - {from: "recbyte", to: "recbyte", type: "integer"}
+          ignore_missing: true
+          fail_on_error: false
     output.elasticsearch:
       index: "ruoyi-nginx-log"
       enabled: true
-      hosts: ["http://cs-es-es.os:9200"] # elasticsearch 地址
+      hosts: ["http://cs-es-es:9200"] # elasticsearch 地址
       username: "elastic"             # elasticsearch 用户名
       password: "N3Q7DANKx68UP150qM8Td6C9"        # elasticsearch 密码
     setup.template.name: "ruoyi-nginx-log"
@@ -90,7 +101,7 @@ spec:
               value: 192.168.11.14
             - name: sentinel-port
               value: "8718"
-          image: "192.168.11.14:5000/ruoyi-nginx:cf24cf6"
+          image: "192.168.11.14:5000/ruoyi-nginx:81215df"
           ports:
             - name: http
               containerPort: 80
