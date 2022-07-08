@@ -1,0 +1,3 @@
+FROM seataio/seata-server
+
+COPY config/* /root/seata-config/
