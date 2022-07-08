@@ -8,7 +8,7 @@ ENV JARNAME="ruoyi-gateway.jar"
 ENV JAVA_OPTS="-Xms128m -Xmx256m"
 ENV ACTIVE="dev"
 ENV SW_AGENT="-javaagent:/app/skywalking-agent.jar \
-              -Dskywalking.agent.service_name=ruoyi-gateway \
+              -Dskywalking.agent.service_name=${buildname} \
               -Dskywalking.collector.backend_service=sk-skywalking-oap.os:11800"
 COPY --from=builder /app/skywalking-agent.jar /app/skywalking-agent.jar
 WORKDIR /app

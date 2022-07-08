@@ -108,7 +108,7 @@ spec:
               protocol: TCP
           readinessProbe:
             failureThreshold: 3
-            initialDelaySeconds: 40
+            initialDelaySeconds: 80
             periodSeconds: 2
             successThreshold: 1
             tcpSocket:
@@ -116,7 +116,7 @@ spec:
             timeoutSeconds: 2
           livenessProbe:
             failureThreshold: 3
-            initialDelaySeconds: 40
+            initialDelaySeconds: 80
             periodSeconds: 2
             successThreshold: 1
             tcpSocket:
