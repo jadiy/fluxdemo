@@ -101,14 +101,14 @@ spec:
               value: 192.168.11.14
             - name: sentinel-port
               value: "8718"
-          image: "192.168.11.14:5000/ruoyi-auth:a0c72ae"
+          image: "192.168.11.14:5000/ruoyi-auth:89cdec1"
           ports:
             - name: http
               containerPort: 8080
               protocol: TCP
           readinessProbe:
             failureThreshold: 3
-            initialDelaySeconds: 40
+            initialDelaySeconds: 80
             periodSeconds: 2
             successThreshold: 1
             tcpSocket:
@@ -116,7 +116,7 @@ spec:
             timeoutSeconds: 2
           livenessProbe:
             failureThreshold: 3
-            initialDelaySeconds: 40
+            initialDelaySeconds: 80
             periodSeconds: 2
             successThreshold: 1
             tcpSocket:
