@@ -13,6 +13,42 @@ spec:
   selector:
     app: ruoyi-modules-system-dev
 ---
+#filebeat
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ruoyi-modules-system-config
+  namespace: k8s
+  labels:
+    sa-app: filebeat
+data:
+  filebeat.yml: |-
+    filebeat.inputs:
+    - type: log
+      paths:
+        - /app/logs/efk_access.log
+      json.keys_under_root: true
+      json.add_error_key: true
+      json.overwrite_keys: true
+    processors:
+      - convert:
+          fields:
+            - {from: "upstreamtime", to: "uptime", type: "float"}
+            - {from: "status", to: "status", type: "integer"}
+            - {from: "responsetime", to: "restime", type: "float"}
+            - {from: "sentbyte", to: "sentbyte", type: "integer"}
+            - {from: "recbyte", to: "recbyte", type: "integer"}
+          ignore_missing: true
+          fail_on_error: false
+    output.elasticsearch:
+      index: "ruoyi-modules-system-log"
+      enabled: true
+      hosts: ["http://cs-es-es.os:9200"] # elasticsearch 地址
+      username: "elastic"             # elasticsearch 用户名
+      password: "N3Q7DANKx68UP150qM8Td6C9"        # elasticsearch 密码
+    setup.template.name: "ruoyi-modules-system-log"
+    setup.template.pattern: "ruoyi-modules-system-*"
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -32,6 +68,13 @@ spec:
         version: v1
         using: dev
     spec:
+      #做一个emptyDir类型，名为www的volume 用于多个容器共享同一个挂载
+      volumes:
+        - name: logs
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: ruoyi-modules-system-config
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -58,7 +101,7 @@ spec:
               value: 192.168.11.14
             - name: sentinel-port
               value: "8718"
-          image: "192.168.11.14:5000/ruoyi-modules-system:96c1c5a"
+          image: "192.168.11.14:5000/ruoyi-modules-system:483d3b8"
           ports:
             - name: http
               containerPort: 8080
@@ -79,3 +122,22 @@ spec:
             tcpSocket:
               port: 8080
             timeoutSeconds: 2
+          volumeMounts:
+            - mountPath: /app/logs/
+              name: logs
+        - name: filebeat
+          image: "kili-docker.pkg.coding.net/ebes/ot/filebeat:8.3.1"
+          imagePullPolicy: IfNotPresent
+          args: [
+            "-c", "/etc/filebeat.yml",
+            "-e",
+          ]
+          volumeMounts:
+            - mountPath: /etc/filebeat.yml
+              name: config
+              readOnly: true
+              subPath: filebeat.yml
+            - mountPath: /app/logs/
+              name: logs
+          resources:
+            {}
