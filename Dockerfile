@@ -11,11 +11,9 @@ ENV JAVA_OPTS="-Xms128m -Xmx256m"
 ENV ACTIVE="dev"
 ENV JARNAME="ruoyi-gateway.jar"
 
-ENV SW_AGENT_NAME=demo-application
 ENV SW_AGENT="-javaagent:/app/skywalking-agent.jar \
               -Dskywalking.agent.service_name=ruoyi-gateway \
-              -Dskywalking.collector.backend_service=sw-skywalking-oap.os:11800"
-
+              -Dskywalking.collector.backend_service=sk-skywalking-oap.os:11800"
 
 ENV ELASTIC_APM="-javaagent:/app/elastic-apm-agent-1.28.4.jar \
                 -Delastic.apm.service_name={JOB_NAME} \

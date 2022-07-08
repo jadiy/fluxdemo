@@ -1,8 +1,12 @@
 FROM ruoyi-init AS builder
 
 FROM  openjdk:8-jre-alpine
+ENV SW_AGENT="-javaagent:/app/skywalking-agent.jar \
+              -Dskywalking.agent.service_name=ruoyi-gateway \
+              -Dskywalking.collector.backend_service=sk-skywalking-oap.os:11800"
 
 WORKDIR /app
+
 
 COPY --from=builder /app/ruoyi-gateway.jar /app/ruoyi-gateway.jar
 
