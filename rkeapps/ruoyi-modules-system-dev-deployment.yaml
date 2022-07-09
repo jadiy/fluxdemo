@@ -101,7 +101,7 @@ spec:
               value: 192.168.11.14
             - name: sentinel-port
               value: "8718"
-          image: "192.168.11.14:5000/ruoyi-modules-system:c70b4b1"
+          image: "192.168.11.14:5000/ruoyi-modules-system:e147e9f"
           ports:
             - name: http
               containerPort: 8080
