@@ -14,5 +14,6 @@ COPY ./third/skywalking-agent  /app/
 WORKDIR /app
 
 COPY --from=builder /app/${buildname}.jar /app/${buildname}.jar
+COPY --from=builder /app/elastic-apm-agent-1.28.4.jar /app/elastic-apm-agent-1.28.4.jar
 
 ENTRYPOINT ["sh", "-c", "java $SW_AGENT $JAVA_OPTS -jar -Duser.timezone=GMT+8 /app/$JARNAME --spring.profiles.active=$ACTIVE "]
