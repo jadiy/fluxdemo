@@ -20,7 +20,7 @@ ENV ELASTIC_APM="-javaagent:/app/elastic-apm-agent-1.28.4.jar \
                 -Delastic.apm.server_urls=http://apm-apm-http.os.svc:8200 \
                 -Delastic.apm.secret_token=sy7p3mC4h8RNi500o4t0Ff8w \
                 -Delastic.apm.environment={ENV} \
-                -Delastic.apm.application_packages=org.kili \
+                -Delastic.apm.application_packages=com.ruoyi \
                 -Dfile.encoding=UTF-8"
 
 WORKDIR /app

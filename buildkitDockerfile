@@ -18,10 +18,10 @@ ENV SW_AGENT="-javaagent:/app/skywalking-agent.jar \
               -Dskywalking.collector.backend_service=sk-skywalking-oap.os:11800"
 
 ENV ELASTIC_APM="-javaagent:/app/elastic-apm-agent-1.28.4.jar \
-                -Delastic.apm.service_name={JOB_NAME} \
-                -Delastic.apm.server_urls=http://apm-apm-http.os.svc:8200 \
+                -Delastic.apm.service_name=ruoyi-gateway \
+                -Delastic.apm.server_urls=http://cs-apm-http.os.svc:8200 \
                 -Delastic.apm.secret_token=sy7p3mC4h8RNi500o4t0Ff8w \
-                -Delastic.apm.environment={ENV} \
+                -Delastic.apm.environment=dev \
                 -Delastic.apm.application_packages=com.ruoyi \
                 -Dfile.encoding=UTF-8"
 WORKDIR /app
