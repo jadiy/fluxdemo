@@ -1,0 +1,143 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ruoyi-nginx
+  namespace: k8s
+  labels:
+    app: ruoyi-nginx
+spec:
+  ports:
+    - port: 80
+      targetPort: http
+      name: http
+  selector:
+    app: ruoyi-nginx
+---
+#filebeat
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ruoyi-nginx-config
+  namespace: k8s
+  labels:
+    sa-app: filebeat
+data:
+  filebeat.yml: |-
+    filebeat.inputs:
+    - type: log
+      paths:
+        - /app/logs/efk_access.log
+      json.keys_under_root: true
+      json.add_error_key: true
+      json.overwrite_keys: true
+    processors:
+      - convert:
+          fields:
+            - {from: "upstreamtime", to: "uptime", type: "float"}
+            - {from: "status", to: "status", type: "integer"}
+            - {from: "responsetime", to: "restime", type: "float"}
+            - {from: "sentbyte", to: "sentbyte", type: "integer"}
+            - {from: "recbyte", to: "recbyte", type: "integer"}
+          ignore_missing: true
+          fail_on_error: false
+    output.elasticsearch:
+      index: "ruoyi-nginx-log"
+      enabled: true
+      hosts: ["http://cs-es-es.os:9200"] # elasticsearch 地址
+      username: "elastic"             # elasticsearch 用户名
+      password: "N3Q7DANKx68UP150qM8Td6C9"        # elasticsearch 密码
+    setup.template.name: "ruoyi-nginx-log"
+    setup.template.pattern: "ruoyi-nginx-*"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ruoyi-nginx
+  namespace: k8s
+  labels:
+    app: ruoyi-nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ruoyi-nginx
+  template:
+    metadata:
+      labels:
+        app: ruoyi-nginx
+        version: v1
+        using: dev
+    spec:
+      #做一个emptyDir类型，名为www的volume 用于多个容器共享同一个挂载
+      volumes:
+        - name: logs
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: ruoyi-nginx-config
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: role
+                operator: In
+                values:
+                - normal
+      containers:
+        - name: code
+          env:
+            - name: JARNAME
+              value: ruoyi-nginx.jar
+            - name: port
+              value: "80"
+            - name: nacos-group
+              value: DEFAULT
+            - name: nacos-host
+              value: 192.168.11.14
+            - name: nacos-port
+              value: "8848"
+            - name: sentinel-host
+              value: 192.168.11.14
+            - name: sentinel-port
+              value: "8718"
+          image: "10.0.1.125:5000/ruoyi-nginx:4c69a23"
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 80
+            periodSeconds: 2
+            successThreshold: 1
+            tcpSocket:
+              port: 80
+            timeoutSeconds: 2
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 80
+            periodSeconds: 2
+            successThreshold: 1
+            tcpSocket:
+              port: 80
+            timeoutSeconds: 2
+          volumeMounts:
+            - mountPath: /app/logs/
+              name: logs
+        - name: filebeat
+          image: "kili-docker.pkg.coding.net/ebes/ot/filebeat:8.3.1"
+          imagePullPolicy: IfNotPresent
+          args: [
+            "-c", "/etc/filebeat.yml",
+            "-e",
+          ]
+          volumeMounts:
+            - mountPath: /etc/filebeat.yml
+              name: config
+              readOnly: true
+              subPath: filebeat.yml
+            - mountPath: /app/logs/
+              name: logs
+          resources:
+            {}
