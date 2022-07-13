@@ -45,7 +45,7 @@ data:
       enabled: true
       hosts: ["http://cs-es-es.os:9200"] # elasticsearch 地址
       username: "elastic"             # elasticsearch 用户名
-      password: "N3Q7DANKx68UP150qM8Td6C9"        # elasticsearch 密码
+      password: "M6Ckf9vSw064c93uxe6enb26"        # elasticsearch 密码
     setup.template.name: "ruoyi-gateway-log"
     setup.template.pattern: "ruoyi-gateway-*"
 ---
@@ -83,7 +83,7 @@ spec:
               - key: role
                 operator: In
                 values:
-                - normal
+                - alb
       containers:
         - name: code
           env:
@@ -94,11 +94,11 @@ spec:
             - name: nacos-group
               value: DEFAULT
             - name: nacos-host
-              value: 192.168.11.14
+              value: 10.0.1.125
             - name: nacos-port
               value: "8848"
             - name: sentinel-host
-              value: 192.168.11.14
+              value: 10.0.1.125
             - name: sentinel-port
               value: "8718"
           image: "10.0.1.125:5000/ruoyi-gateway:a319076"

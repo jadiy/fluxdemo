@@ -83,7 +83,7 @@ spec:
               - key: role
                 operator: In
                 values:
-                - normal
+                - alb
       containers:
         - name: code
           env:
@@ -94,11 +94,11 @@ spec:
             - name: nacos-group
               value: DEFAULT
             - name: nacos-host
-              value: {IP}
+              value: 10.0.1.125
             - name: nacos-port
               value: "8848"
             - name: sentinel-host
-              value: {IP}
+              value: 10.0.1.125
             - name: sentinel-port
               value: "8718"
           image: "{CODE}"
