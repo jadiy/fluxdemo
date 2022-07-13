@@ -1,4 +1,4 @@
-localIP="10.0.1.111"
+localIP="10.0.1.125"
 imageurl="${localIP}:5000"
 pipeline {
     agent any;

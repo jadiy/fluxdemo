@@ -94,11 +94,11 @@ spec:
             - name: nacos-group
               value: DEFAULT
             - name: nacos-host
-              value: 10.0.1.125
+              value: {IP}
             - name: nacos-port
               value: "8848"
             - name: sentinel-host
-              value: 10.0.1.125
+              value: {IP}
             - name: sentinel-port
               value: "8718"
           image: "{CODE}"
