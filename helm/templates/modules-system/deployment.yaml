@@ -12,6 +12,7 @@ spec:
   selector:
     matchLabels:
       {{- include "helm.selectorLabels" . | nindent 6 }}
+      app: {{ include "helm.fullname" . }}-modules-system
   template:
     metadata:
     {{- with .Values.podAnnotations }}
@@ -47,11 +48,11 @@ spec:
             - name: sentinel-port
               value: "8718"
             - name: SW_AGENT
-              value: "{{ .Values.modules-system.config.tracing }}"
+              value: "{{ .Values.modulesSystem.config.tracing }}"
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.modules-system.image.repository }}:{{ .Values.modules-system.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.modules-system.image.pullPolicy }}
+          image: "{{ .Values.modulesSystem.image.repository }}:{{ .Values.modulesSystem.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.modulesSystem.image.pullPolicy }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

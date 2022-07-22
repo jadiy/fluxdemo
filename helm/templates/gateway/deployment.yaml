@@ -12,6 +12,7 @@ spec:
   selector:
     matchLabels:
       {{- include "helm.selectorLabels" . | nindent 6 }}
+      app: {{ include "helm.fullname" . }}-gateway
   template:
     metadata:
     {{- with .Values.podAnnotations }}

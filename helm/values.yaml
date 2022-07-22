@@ -25,20 +25,20 @@ auth:
     repository: 10.0.1.125:5000/ruoyi-auth
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: e543f66
+    tag: 47fc89f
   config:
     tracing: "-javaagent:/app/skywalking-agent.jar -Dskywalking.agent.service_name=ruoyi-auth -Dskywalking.collector.backend_service=sw-skywalking-oap.os:11800"
   metrics:
     enabled: true
     serviceMonitor:
       enabled: true
-modules-system:
+modulesSystem:
   name: modules-system
   image:
     repository: 10.0.1.125:5000/ruoyi-modules-system
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: fabda79
+    tag: b70a1f5
   config:
     tracing: "-javaagent:/app/skywalking-agent.jar -Dskywalking.agent.service_name=ruoyi-modules-system -Dskywalking.collector.backend_service=sw-skywalking-oap.os:11800"
   metrics:
