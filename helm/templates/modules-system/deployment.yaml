@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "helm.fullname" . }}-modules-system
+  labels:
+    {{- include "helm.labels" . | nindent 4 }}
+    app: {{ include "helm.fullname" . }}-modules-system
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "helm.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "helm.selectorLabels" . | nindent 8 }}
+        app: {{ include "helm.fullname" . }}-modules-system
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "helm.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          env:
+            - name: JARNAME
+              value: ruoyi-modules-system.jar
+            - name: port
+              value: "{{ .Values.service.port }}"
+            - name: nacos-group
+              value: DEFAULT
+            - name: nacos-host
+              value: {{ .Values.globalConfig.nacosHost }}
+            - name: nacos-port
+              value: "{{ .Values.globalConfig.nacosPort }}"
+            - name: sentinel-host
+              value: 10.0.1.125
+            - name: sentinel-port
+              value: "8718"
+            - name: SW_AGENT
+              value: "{{ .Values.modules-system.config.tracing }}"
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.modules-system.image.repository }}:{{ .Values.modules-system.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.modules-system.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 100
+            periodSeconds: 2
+            successThreshold: 1
+            tcpSocket:
+              port: {{ .Values.service.port }}
+            timeoutSeconds: 2
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 100
+            periodSeconds: 2
+            successThreshold: 1
+            tcpSocket:
+              port: {{ .Values.service.port }}
+            timeoutSeconds: 2
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

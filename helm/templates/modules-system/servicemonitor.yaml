@@ -1,0 +1,20 @@
+{{- if and .Values.modules-system.metrics.enabled .Values.modules-system.metrics.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "helm.fullname" . }}-modules-system
+  namespace: {{ .Release.Namespace }}
+spec:
+  jobLabel: ""
+  endpoints:
+    - port: http
+      interval: 15s
+      path: /actuator/prometheus
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "helm.fullname" . }}
+      app: {{ include "helm.fullname" . }}-modules-system
+{{- end }}
