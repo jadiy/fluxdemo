@@ -4,12 +4,12 @@
 
 replicaCount: 1
 globalConfig:
-  nacosHost: 10.0.1.125
+  nacosHost: 192.168.11.14
   nacosPort: 8848
 gateway:
   name: gateway
   image:
-    repository: 10.0.1.125:5000/ruoyi-gateway
+    repository: 192.168.11.14:5000/ruoyi-gateway
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: bfd43cc
@@ -22,7 +22,7 @@ gateway:
 auth:
   name: auth
   image:
-    repository: 10.0.1.125:5000/ruoyi-auth
+    repository: 192.168.11.14:5000/ruoyi-auth
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: 47fc89f
@@ -35,7 +35,7 @@ auth:
 modulesSystem:
   name: modules-system
   image:
-    repository: 10.0.1.125:5000/ruoyi-modules-system
+    repository: 192.168.11.14:5000/ruoyi-modules-system
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: b70a1f5
