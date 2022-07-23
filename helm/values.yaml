@@ -11,10 +11,9 @@ gateway:
   image:
     repository: 192.168.11.14:5000/ruoyi-gateway
     pullPolicy: IfNotPresent
-    # Overrides the image tag whose default is the chart appVersion.
-    tag: bfd43cc
+    tag: "0e43446"
   config:
-    tracing: "-javaagent:/app/skywalking-agent.jar -Dskywalking.agent.service_name=ruoyi-gateway -Dskywalking.collector.backend_service=sw-skywalking-oap.os:11800"
+    tracing: " "
   metrics:
     enabled: true
     serviceMonitor:
@@ -24,10 +23,9 @@ auth:
   image:
     repository: 192.168.11.14:5000/ruoyi-auth
     pullPolicy: IfNotPresent
-    # Overrides the image tag whose default is the chart appVersion.
-    tag: 47fc89f
+    tag: "91318b4"
   config:
-    tracing: "-javaagent:/app/skywalking-agent.jar -Dskywalking.agent.service_name=ruoyi-auth -Dskywalking.collector.backend_service=sw-skywalking-oap.os:11800"
+    tracing: " "
   metrics:
     enabled: true
     serviceMonitor:
@@ -37,10 +35,9 @@ modulesSystem:
   image:
     repository: 192.168.11.14:5000/ruoyi-modules-system
     pullPolicy: IfNotPresent
-    # Overrides the image tag whose default is the chart appVersion.
-    tag: b70a1f5
+    tag: "ba009bd"
   config:
-    tracing: "-javaagent:/app/skywalking-agent.jar -Dskywalking.agent.service_name=ruoyi-modules-system -Dskywalking.collector.backend_service=sw-skywalking-oap.os:11800"
+    tracing: " "
   metrics:
     enabled: true
     serviceMonitor:
