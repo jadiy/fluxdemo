@@ -81,7 +81,7 @@ pipeline {
                    input("确认生成部署文件吗?")
                    dir ("${workdir}")
                     {
-                      sh "git pull"
+                      sh "git pull origin master"
                       sh "sed -e 's#{IP}#${localIP}#g;s#{PORT}#8080#g;s#{JOB_NAME}#${DOCKER_IMAGE_NAME}#g;s#{CODE}#${imageurl}/${DOCKER_IMAGE_NAME}:${build_tag}#g;s#{ENV}#${ENV}#g' ${workdir}/cd/common-deployment.yaml > ${workdir}/rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml"
                       sh "git checkout -b deploy"
                       sh "git config --global user.email 'agent@aa.com' && git config --global user.name 'deploy'"
