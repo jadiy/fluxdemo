@@ -1,0 +1,9 @@
+apiVersion: fleet.cattle.io/v1alpha1
+kind: GitRepo
+metadata:
+  name: ruoyi
+  namespace: fleet-local
+spec:
+  repo: "https://github.com/jadiy/fluxdemo.git"
+  paths:
+  - helm

@@ -6,6 +6,12 @@ targetCustomizations:
         gateway:
           metrics:
             enabled: false
+        auth:
+          metrics:
+            enabled: false
+        modulesSystem:
+          metrics:
+            enabled: false
     clusterSelector:
       matchLabels:
         env: dev
