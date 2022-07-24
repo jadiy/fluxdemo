@@ -15,6 +15,5 @@ spec:
       - {{ .Release.Namespace }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "helm.fullname" . }}
       app: {{ include "helm.fullname" . }}-gateway
 {{- end }}
