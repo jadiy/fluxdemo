@@ -1,4 +1,4 @@
-localIP="10.0.1.125"
+localIP="192.168.11.14"
 imageurl="${localIP}:5000"
 pipeline {
     agent any;
@@ -88,13 +88,14 @@ pipeline {
                       sh "git checkout -b deploy"
                       sh "git config --global user.email 'agent@aa.com' && git config --global user.name 'deploy'"
                       sh "git add rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml"
-                      sh "git commit -m 'add deploy' rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml "
                       script{
                         def oldValues = readYaml file : helm/valuses.yaml
                         oldRegisty = oldValues.globalConfig.registryUrl
                         oldTag = oldValues.globalConfig.${DOCKER_IMAGE_NAME}Tag
                         sh "sed -i 's#${oldRegisty}#${imageurl}#g;s#${DOCKER_IMAGE_NAME}Tag:${oldTag}#${DOCKER_IMAGE_NAME}Tag:${build_tag}#g'"
                       }
+                      sh "git commit -m 'add deploy' rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml "
+
                       sshagent(['16522bc4-4826-4b0a-beb4-66890b6cb38d']) {
                         sh "git push origin deploy:master"
                       }
