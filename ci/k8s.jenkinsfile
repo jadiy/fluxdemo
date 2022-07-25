@@ -52,6 +52,7 @@ pipeline {
                       volumeMounts:
                         - mountPath: /usr/bin/docker
                           name: docker
+                    nodeName: 3c16g125
                     volumes:
                       - hostPath:
                           path: /usr/bin/docker
