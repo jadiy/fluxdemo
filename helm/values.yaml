@@ -6,12 +6,15 @@ replicaCount: 1
 globalConfig:
   nacosHost: 192.168.11.14
   nacosPort: 8848
+  registryUrl: 192.168.11.14:5000
+  gatewayTag: "0e43446"
+  authTag: "91318b4"
+  modulesSystemTag: "ba009bd"
 gateway:
   name: gateway
   image:
-    repository: 192.168.11.14:5000/ruoyi-gateway
+    repository: "/ruoyi-gateway"
     pullPolicy: IfNotPresent
-    tag: "0e43446"
   config:
     tracing: " "
   metrics:
@@ -21,9 +24,8 @@ gateway:
 auth:
   name: auth
   image:
-    repository: 192.168.11.14:5000/ruoyi-auth
+    repository: "/ruoyi-auth"
     pullPolicy: IfNotPresent
-    tag: "91318b4"
   config:
     tracing: " "
   metrics:
@@ -33,9 +35,8 @@ auth:
 modulesSystem:
   name: modules-system
   image:
-    repository: 192.168.11.14:5000/ruoyi-modules-system
+    repository: "/ruoyi-modules-system"
     pullPolicy: IfNotPresent
-    tag: "ba009bd"
   config:
     tracing: " "
   metrics:

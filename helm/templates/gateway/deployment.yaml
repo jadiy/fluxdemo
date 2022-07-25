@@ -51,7 +51,7 @@ spec:
               value: "{{ .Values.gateway.config.tracing }}"
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.gateway.image.repository }}:{{ .Values.gateway.image.tag }}"
+          image: "{{ .Values.globalConfig.registryUrl }}{{ .Values.gateway.image.repository }}:{{ .Values.globalConfig.gatewayTag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.gateway.image.pullPolicy }}
           ports:
             - name: http

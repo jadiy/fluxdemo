@@ -51,7 +51,7 @@ spec:
               value: "{{ .Values.modulesSystem.config.tracing }}"
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.modulesSystem.image.repository }}:{{ .Values.modulesSystem.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.globalConfig.registryUrl }}{{ .Values.modulesSystem.image.repository }}:{{ .Values.globalConfig.modulesSystemTag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.modulesSystem.image.pullPolicy }}
           ports:
             - name: http
