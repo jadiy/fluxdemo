@@ -4,7 +4,7 @@
 
 replicaCount: 1
 globalConfig:
-  nacosHost: 192.168.11.14
+  nacosHost: 10.0.1.125
   nacosPort: 8848
   registryUrl: 192.168.11.14:5000
   gatewayTag: "0e43446"
