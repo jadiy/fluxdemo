@@ -101,7 +101,7 @@ spec:
               value: 10.0.1.125
             - name: sentinel-port
               value: "8718"
-          image: "10.0.1.125:5000/ruoyi-auth:47fc89f"
+          image: "10.0.1.125:5000/ruoyi-auth:5f36dd2"
           ports:
             - name: http
               containerPort: 8080
