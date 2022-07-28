@@ -1,0 +1,66 @@
+version : '3'
+services:
+  ruoyi-nginx:
+    container_name: ruoyi-nginx
+    image: docker_ruoyi-ui
+    ports:
+      - "83:80"
+    depends_on:
+      - ruoyi-gateway
+  ruoyi-gateway:
+    container_name: ruoyi-gateway
+    build:
+        context: ./ruoyi/gateway
+        dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - JARNAME=ruoyi-gateway.jar
+      - gateway-port=8080
+      - nacos-host=192.168.11.14
+      - nacos-port=8848
+      - nacos-group=DEFAULT
+      - sentinel-host=192.168.11.14
+      - sentinel-port=8718
+  ruoyi-auth:
+    container_name: ruoyi-auth
+    build:
+        context: ./ruoyi/auth
+        dockerfile: Dockerfile
+    ports:
+      - "9200:8080"
+    environment:
+      - JARNAME=ruoyi-auth.jar
+      - auth-port=8080
+      - nacos-host=192.168.11.14
+      - nacos-port=8848
+      - nacos-group=DEFAULT
+  ruoyi-system:
+    container_name: ruoyi-modules-system
+    build:
+        context: ./ruoyi/modules/system
+        dockerfile: Dockerfile
+    ports:
+      - "9201:8080"
+    environment:
+      - JARNAME=ruoyi-modules-system.jar
+      - system-port=8080
+      - nacos-host=192.168.11.14
+      - nacos-port=8848
+      - nacos-group=DEFAULT
+  ruoyi-monitor:
+    container_name: ruoyi-visual-monitor
+    build:
+        context: ./ruoyi/visual/monitor
+        dockerfile: Dockerfile
+    ports:
+      - "9100:8080"
+    environment:
+      - JARNAME=ruoyi-visual-monitor.jar
+      - monitor-port=8080
+      - nacos-host=192.168.11.14
+      - nacos-port=8848
+      - nacos-group=DEFAULT
+networks:
+  ruoyi:
+    external: false
