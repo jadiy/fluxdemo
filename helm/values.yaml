@@ -7,10 +7,10 @@ globalConfig:
   nacosHost: 10.0.1.125
   nacosPort: 8848
   registryUrl: 10.0.1.125:5000
-  gatewayTag: "4b4c8ef"
+  gatewayTag: "8f9e37a"
   authTag: "60c3230"
   modulesSystemTag: "c5292ff"
-  loadTest: false
+  loadTest: true
 gateway:
   name: gateway
   image:
