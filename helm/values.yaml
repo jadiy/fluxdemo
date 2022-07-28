@@ -10,7 +10,7 @@ globalConfig:
   gatewayTag: "8f9e37a"
   authTag: "5f36dd2"
   modulesSystemTag: "c5292ff"
-  loadTest: true
+  loadTest: false
 gateway:
   name: gateway
   image:
