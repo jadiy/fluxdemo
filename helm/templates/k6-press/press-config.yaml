@@ -40,7 +40,7 @@ data:
     }
 kind: ConfigMap
 metadata:
-  name: muti-stress-test
+  name: {{ include "helm.fullname" . }}-muti-stress-test
   namespace: k8s
   labels:
     {{- include "helm.labels" . | nindent 4 }}
