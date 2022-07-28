@@ -5,7 +5,7 @@ data:
     import http from 'k6/http';
     import { sleep } from 'k6';
     export function setup() {
-       let url = `http://ruoyi-gateway.k8s:8080/auth/login`;
+       let url = `http://{{ include "helm.fullname" . }}-gateway.k8s:8080/auth/login`;
        const requestBody = {"username":"admin","password":"admin123"};
        const passwordAuthResp = http.post(url, JSON.stringify(requestBody),{
        headers: { 'Content-Type': 'application/json' },
@@ -26,7 +26,7 @@ data:
             Authorization: `Bearer ${data.access_token}`,
         },
     };
-    const API_BASE_URL = 'http://ruoyi-gateway.k8s:8080';
+    const API_BASE_URL = 'http://{{ include "helm.fullname" . }}-gateway.k8s:8080';
     http.batch([
         ['GET', `${API_BASE_URL}/system/dict/data/type/sys_user_sex`,null,headoptions],
         ['GET', `${API_BASE_URL}/system/dict/data/type/sys_normal_disable`,null,headoptions],
