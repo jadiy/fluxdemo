@@ -1,0 +1,15 @@
+{{- if .Values.globalConfig.loadTest  }}
+apiVersion: k6.io/v1alpha1
+kind: K6
+metadata:
+  name: muti-press
+  labels:
+    {{- include "helm.labels" . | nindent 4 }}
+spec:
+  parallelism: 2
+  script:
+    configMap:
+      name: muti-stress-test
+      file: muti.js
+  arguments: --out influxdb=http://10.0.1.125:8086/ry_test
+{{- end }}

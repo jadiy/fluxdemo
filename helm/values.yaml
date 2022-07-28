@@ -6,17 +6,20 @@ replicaCount: 1
 globalConfig:
   nacosHost: 10.0.1.125
   nacosPort: 8848
-  registryUrl: 192.168.11.14:5000
-  gatewayTag: "0e43446"
-  authTag: "91318b4"
-  modulesSystemTag: "ba009bd"
+  registryUrl: 10.0.1.125:5000
+  gatewayTag: "4b4c8ef"
+  authTag: "60c3230"
+  modulesSystemTag: "c5292ff"
+  loadTest: false
 gateway:
   name: gateway
   image:
     repository: "/ruoyi-gateway"
     pullPolicy: IfNotPresent
   config:
-    tracing: " "
+    tracing: "-javaagent:/app/skywalking-agent.jar \
+                            -Dskywalking.agent.service_name=ruoyi-gateway \
+                            -Dskywalking.collector.backend_service=sw-skywalking-oap.os:11800 "
   metrics:
     enabled: true
     serviceMonitor:
@@ -27,7 +30,9 @@ auth:
     repository: "/ruoyi-auth"
     pullPolicy: IfNotPresent
   config:
-    tracing: " "
+    tracing: "-javaagent:/app/skywalking-agent.jar \
+                                          -Dskywalking.agent.service_name=ruoyi-auth \
+                                          -Dskywalking.collector.backend_service=sw-skywalking-oap.os:11800 "
   metrics:
     enabled: true
     serviceMonitor:
@@ -38,7 +43,9 @@ modulesSystem:
     repository: "/ruoyi-modules-system"
     pullPolicy: IfNotPresent
   config:
-    tracing: " "
+    tracing: "-javaagent:/app/skywalking-agent.jar \
+                                          -Dskywalking.agent.service_name=ruoyi-modules-system \
+                                          -Dskywalking.collector.backend_service=sw-skywalking-oap.os:11800 "
   metrics:
     enabled: true
     serviceMonitor:

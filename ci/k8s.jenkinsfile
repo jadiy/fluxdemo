@@ -83,21 +83,40 @@ pipeline {
                    dir ("${workdir}")
                     {
                       sshagent(['jadiy']) {
-                          sh "git pull origin master"
+
                       }
-                      sh "sed -e 's#{IP}#${localIP}#g;s#{PORT}#8080#g;s#{JOB_NAME}#${DOCKER_IMAGE_NAME}#g;s#{CODE}#${imageurl}/${DOCKER_IMAGE_NAME}:${build_tag}#g;s#{ENV}#${ENV}#g' ${workdir}/cd/common-deployment.yaml > ${workdir}/rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml"
-                      sh "git checkout -b deploy"
-                      sh "git config --global user.email 'agent@aa.com' && git config --global user.name 'deploy'"
-                      sh "git add rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml"
-                        script{
-                          def oldValues = readYaml file : helm/valuses.yaml
-                          oldRegisty = oldValues.globalConfig.registryUrl
-                          oldTag = oldValues.globalConfig.${DOCKER_IMAGE_NAME}Tag
-                          sh "sed -i 's#${oldRegisty}#${imageurl}#g;s#${DOCKER_IMAGE_NAME}Tag:${oldTag}#${DOCKER_IMAGE_NAME}Tag:${build_tag}#g'"
-                        }
-                      sh "git commit -m 'add deploy' rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml "
+
                       sshagent(['jadiy']) {
-                        sh "git push origin deploy:master"
+
+                      }
+                      withCredentials([usernamePassword(credentialsId:"git-https",
+                        usernameVariable: "GIT_USERNAME",
+                        passwordVariable: "GIT_PASSWORD")]) {
+                        script{
+                            sh "git pull origin master"
+                            sh 'git config --local credential.helper "!p() { echo username=\\$GIT_USERNAME; echo password=\\$GIT_PASSWORD; }; p"'
+                            sh "sed -e 's#{IP}#${localIP}#g;s#{PORT}#8080#g;s#{JOB_NAME}#${DOCKER_IMAGE_NAME}#g;s#{CODE}#${imageurl}/${DOCKER_IMAGE_NAME}:${build_tag}#g;s#{ENV}#${ENV}#g' ${workdir}/cd/common-deployment.yaml > ${workdir}/rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml"
+                            sh "git checkout -b deploy"
+                            sh "git config --global user.email 'agent@aa.com' && git config --global user.name 'deploy'"
+                            sh "git add rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml"
+                            def oldValues = readYaml file : "${workdir}/helm/values.yaml"
+                            oldRegisty = oldValues.globalConfig.registryUrl
+                            oldTag = oldValues.globalConfig."${BUILD_NAME}Tag"
+                            sh "sed -i 's#${oldRegisty}#${imageurl}#g;s#${BUILD_NAME}Tag: \"${oldTag}\"#${BUILD_NAME}Tag: \"${build_tag}\"#g' ${workdir}/helm/values.yaml"
+                            if("${BUILD_PROCESS}" == "press"){
+                                sh "sed -i 's#loadTest: false#loadTest: true#g' ${workdir}/helm/values.yaml"
+                            }
+                            sh "git commit -m 'add deploy' rkeapps/${DOCKER_IMAGE_NAME}-${ENV}-deployment.yaml helm/values.yaml"
+                            sh "git push origin deploy:master"
+                            if("${BUILD_PROCESS}" == "press"){
+                                println "waiting load test"
+                                sleep 420
+                                sh "git pull origin master"
+                                sh "sed -i 's#loadTest: true#loadTest: false#g' ${workdir}/helm/values.yaml"
+                                sh "git commit -m 'reset loadtest' helm/values.yaml"
+                                sh "git push origin deploy:master"
+                            }
+                        }
                       }
                    }
                 }

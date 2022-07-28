@@ -1,0 +1,47 @@
+{{- if .Values.globalConfig.loadTest  }}
+apiVersion: v1
+data:
+  muti.js: |
+    import http from 'k6/http';
+    import { sleep } from 'k6';
+    export function setup() {
+       let url = `http://ruoyi-gateway.k8s:8080/auth/login`;
+       const requestBody = {"username":"admin","password":"admin123"};
+       const passwordAuthResp = http.post(url, JSON.stringify(requestBody),{
+       headers: { 'Content-Type': 'application/json' },
+      });
+      return passwordAuthResp.json().data;
+    }
+    export const options = {
+      stages: [
+        { target: 1, duration: '120s' },
+        { target: 50, duration: '200s' },
+        { target: 0, duration: '30s' },
+      ],
+    };
+    export default function (data) {
+        const headoptions = {
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${data.access_token}`,
+        },
+    };
+    const API_BASE_URL = 'http://ruoyi-gateway.k8s:8080';
+    http.batch([
+        ['GET', `${API_BASE_URL}/system/dict/data/type/sys_user_sex`,null,headoptions],
+        ['GET', `${API_BASE_URL}/system/dict/data/type/sys_normal_disable`,null,headoptions],
+        ['GET', `${API_BASE_URL}/system/user/list?pageNum=1&pageSize=10`,null,headoptions],
+        ['GET', `${API_BASE_URL}/system/dept/treeselect`,null,headoptions],
+        ['GET', `${API_BASE_URL}/system/config/configKey/sys.user.initPassword`,null,headoptions],
+        ['GET', `${API_BASE_URL}/system/dict/data/type/sys_normal_disable`,null,headoptions],
+        ['GET', `${API_BASE_URL}/system/role/list?pageNum=1&pageSize=10`,null,headoptions],
+    ]);
+    sleep(1);
+    }
+kind: ConfigMap
+metadata:
+  name: muti-stress-test
+  namespace: k8s
+  labels:
+    {{- include "helm.labels" . | nindent 4 }}
+{{- end }}
